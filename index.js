@@ -8,6 +8,7 @@ var cancelIdleCallback = rIC.cancel;
 
 var React = undefined;
 var ReactDOM = undefined;
+var context = undefined;
 
 var boldCourier = 'font-weight:bold;font-family:Courier;';
 var critical = 'color:red;font-weight:bold;';
@@ -120,7 +121,16 @@ function checkAndReport(node, timeout) {
 
   var deferred = createDeferred();
 
-  nodes.push(node);
+  // todo support other types of context
+	let contextNodes = document.body.querySelectorAll(context);
+
+	// If node within context
+	contextNodes = contextNodes.filter(function(node) {
+		return context.contains(node);
+	});
+
+	nodes.concat(contextNodes);
+
   idleId = requestIdleCallback(
     function() {
       var n = getCommonParent(
@@ -210,8 +220,8 @@ function checkNode(component) {
   }
 
   if (node) {
-    checkAndReport(node, timeout);
-  }
+		checkAndReport(node, timeout);
+	}
 }
 
 function componentAfterRender(component) {
@@ -237,10 +247,11 @@ function addComponent(component) {
   }
 }
 
-var reactAxe = function reactAxe(_React, _ReactDOM, _timeout, conf) {
+var reactAxe = function reactAxe(_React, _ReactDOM, _context, _timeout, conf) {
   React = _React;
   ReactDOM = _ReactDOM;
   timeout = _timeout;
+  context = _context;
 
   if (conf) {
     axeCore.configure(conf);
@@ -272,7 +283,7 @@ var reactAxe = function reactAxe(_React, _ReactDOM, _timeout, conf) {
     };
   }
 
-  return checkAndReport(document.body, timeout);
+  return checkAndReport(node, timeout);
 };
 
 module.exports = reactAxe;
